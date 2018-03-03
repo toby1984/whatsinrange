@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration monitorInterval="5">
+  <Appenders>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d %-5p [%t] %C:%L - %m%n "/>
+    </Console>
+<!--     <File name="file" fileName="/home/tgierke/tmp/startup2.log">
+      <PatternLayout pattern="%d %-5p [%t] %C:%L - %m%n"/>
+    </File>     -->
+  </Appenders>
+  <Loggers>
+    <Logger name="org.springframework.context" level="info"/>
+    <Logger name="org.springframework.core" level="info"/>
+    <Logger name="org.springframework.beans" level="info"/>
+    <Root level="info">
+      <AppenderRef ref="STDOUT"/>
+    </Root>
+  </Loggers>
+</Configuration>
