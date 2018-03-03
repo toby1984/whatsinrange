@@ -23,10 +23,6 @@
     <property name="password" value="whatsinrange" />
   </bean>        
 
-  <bean name="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-    <property name="dataSource" ref="datasource"/>
-  </bean>
-
   <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
     <property name="dataSource" ref="datasource" />
   </bean>
@@ -34,9 +30,4 @@
   <tx:annotation-driven proxy-target-class="true" transaction-manager="transactionManager" />
 
   <context:component-scan base-package="de.codesourcery.whatsinrange" />
-
-  <!-- Beans -->
-  <bean id="mapDataStorage" class="de.codesourcery.whatsinrange.whatsinrange.MapDataStorage">
-    <property name="dataSource" ref="datasource" />
-  </bean>
 </beans>
