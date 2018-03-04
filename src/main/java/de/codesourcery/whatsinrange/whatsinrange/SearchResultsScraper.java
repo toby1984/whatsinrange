@@ -31,8 +31,7 @@ public abstract class SearchResultsScraper
     public static final Duration MIN_LOGIN_RETRY_DELAY = Duration.ofSeconds( 1 );
     public static final Duration MAX_LOGIN_RETRY_DELAY = Duration.ofHours( 2 );
 
-    private boolean savePages = false;
-    private boolean persistCookied = false;
+    private boolean savePages = true;
 
     protected PhantomJSDriver driver;   
 
@@ -44,12 +43,10 @@ public abstract class SearchResultsScraper
     {
         final DesiredCapabilities caps = createCapabilities();
         final PhantomJSDriver driver = new PhantomJSDriver(caps);
-        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
         return driver;
     } 
     
-    protected abstract File getCookieFile();
-
     public SearchResultsScraper(PhantomJSDriver driver) {
         this.driver = driver;
     }
@@ -66,7 +63,7 @@ public abstract class SearchResultsScraper
         
         String executablePath = System.getProperty("phantomjs.executable");
         if ( StringUtils.isBlank(executablePath) ) {
-            executablePath = "/home/tobi/apps/phantomjs-2.1.1-linux-x86_64/bin/phantomjs"; 
+            executablePath = "/home/tobi/apps/phantomjs/bin/phantomjs"; 
         }
         LOG.info("PhantomJS executable: "+executablePath);
         caps.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, executablePath );
@@ -180,8 +177,6 @@ public abstract class SearchResultsScraper
     {
         return opt.isPresent() ? Stream.of(opt.get()) :  Stream.empty();
     }
-
-    protected abstract String getHomePageURL();
 
     protected static String cleanString(String input) 
     {
