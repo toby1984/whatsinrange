@@ -1,5 +1,7 @@
 package de.codesourcery.whatsinrange.whatsinrange;
 
+import java.time.Duration;
+
 public class POINode 
 {
     /*
@@ -16,7 +18,7 @@ public class POINode
     public String omsmNodeName;
     public NodeType nodeType;
     public String hvvName;
-    public float minutesToCentralStation;
+    public Duration timeToCentralStation;
     public Coordinates osmNodeLocation;
     
     public POINode() {
@@ -38,6 +40,6 @@ public class POINode
     public String toString() {
         return "POINode [nodeId=" + nodeId + ", osmNodeId=" + osmNodeId + ", omsmNodeName=" + omsmNodeName
                 + ", nodeType=" + nodeType + ", hvvName=" + hvvName + ", minutesToCentralStation="
-                + minutesToCentralStation + ", osmNodeLocation=" + osmNodeLocation + "]";
+                + timeToCentralStation + ", osmNodeLocation=" + osmNodeLocation + "]";
     }    
 }

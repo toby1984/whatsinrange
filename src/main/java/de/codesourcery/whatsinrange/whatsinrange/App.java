@@ -19,6 +19,9 @@ public class App
 {
     @Autowired
     private IMapDataStorage storage;
+    
+    @Autowired
+    private DataEnhancer dataEnhancer;
 
     @Transactional
     public void importData(InputStream in) throws FileNotFoundException, XMLStreamException 
@@ -28,15 +31,15 @@ public class App
         }
         final OSMXmlParser parser = new OSMXmlParser();
         parser.parse(in);
-        for ( NodeType t : NodeType.values() ) {
-            if ( t != NodeType.UNKNOWN ) 
-            {
-                parser.getNamedLocations(t).locationsByName.values().forEach( n -> 
-                {
-                    System.out.println("Node "+n.nodeId+" | "+n.name()+" | "+n.nodeType()+" | "+n.coordinates+" | "+n.getTagString());
-                });
-            }
-        }
+//        for ( NodeType t : NodeType.values() ) {
+//            if ( t != NodeType.UNKNOWN ) 
+//            {
+//                parser.getNamedLocations(t).locationsByName.values().forEach( n -> 
+//                {
+//                    System.out.println("Node "+n.nodeId+" | "+n.name()+" | "+n.nodeType()+" | "+n.coordinates+" | "+n.getTagString());
+//                });
+//            }
+//        }
 
         for ( NodeType t : NodeType.values() ) {
             if ( t != NodeType.UNKNOWN ) {
@@ -52,4 +55,9 @@ public class App
         }
         System.out.println("Finished persisting data.");
     }    
+    
+    public void enhanceData() 
+    {
+        dataEnhancer.run();
+    }
 }

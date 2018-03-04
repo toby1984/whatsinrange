@@ -11,9 +11,12 @@ public class Main
         try ( ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("/spring.xml")  )
         {
             // do stuff
+//            final String map = "/map.osm";
             final String map = "/hamburg.osm";
             final InputStream in = App.class.getResourceAsStream( map );            
-            ctx.getBean(App.class).importData(in);
+            final App app = ctx.getBean(App.class);
+            app.importData(in);
+            app.enhanceData();
         }
     }
 }

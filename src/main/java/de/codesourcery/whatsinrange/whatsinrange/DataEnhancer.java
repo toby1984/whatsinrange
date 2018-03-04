@@ -37,7 +37,7 @@ public class DataEnhancer implements AutoCloseable, DisposableBean
     public DataEnhancer() 
     {
         final BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(300);
-        threadPool = new ThreadPoolExecutor( 20,20,60,TimeUnit.SECONDS,workQueue );
+        threadPool = new ThreadPoolExecutor( 30,30,60,TimeUnit.SECONDS,workQueue );
     }
 
     public void run() 

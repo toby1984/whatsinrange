@@ -6,32 +6,23 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
-public abstract class SearchResultsScraper 
+public abstract class SearchResultsScraper implements AutoCloseable 
 {
-    protected final Logger LOG = LogManager.getLogger( getClass() );
+    private static final Logger LOG = LogManager.getLogger( SearchResultsScraper.class );
 
-    public static final Duration MIN_LOGIN_RETRY_DELAY = Duration.ofSeconds( 1 );
-    public static final Duration MAX_LOGIN_RETRY_DELAY = Duration.ofHours( 2 );
-
-    private boolean savePages = true;
+    private boolean savePages = false;
 
     protected PhantomJSDriver driver;   
 
@@ -47,11 +38,16 @@ public abstract class SearchResultsScraper
         return driver;
     } 
     
+    @Override
+    public void close() throws Exception {
+        driver.quit();
+    }
+    
     public SearchResultsScraper(PhantomJSDriver driver) {
         this.driver = driver;
     }
     
-    protected void setDriver(PhantomJSDriver driver) {
+    protected final void setDriver(PhantomJSDriver driver) {
         this.driver = driver;
     }
 
@@ -76,41 +72,7 @@ public abstract class SearchResultsScraper
         return caps;
     }
 
-    protected abstract String getSearchURL();
-
-    public List<SearchResult> performSearch() 
-    {
-        ZonedDateTime now = ZonedDateTime.now();
-        List<SearchResult> result = new ArrayList<>();
-
-        LOG.info("doSearch(): Initiating search");
-        loadFirstResultPage();
-        while( true ) 
-        {
-            LOG.info("doSearch(): Parsing results...");
-            result.addAll( extractSearchResults() );
-
-            // check if we have more pages
-            final Pagination pagination = getPagination();
-            LOG.info("Current page: "+pagination);
-            if ( pagination.isOnLastPage() ) 
-            {
-                result.forEach( e -> e.createdOn = now );
-                return result;
-            }
-            LOG.info("doSearch(): Advancing to page "+pagination.nextPage( pagination.currentPage().get() ) );
-            pagination.selectNextPage();
-            LOG.info("doSearch(): Page loaded");
-        }
-    }
-
-    protected abstract List<SearchResult> extractSearchResults();
-
-    protected abstract void loadFirstResultPage();
-
-    protected abstract Pagination getPagination();
-
-    protected  void loadPage(String debugName, String url) 
+    protected final void loadPage(String debugName, String url) 
     {
         LOG.info("Loading "+debugName+"...");
         driver.get( url );
@@ -121,7 +83,7 @@ public abstract class SearchResultsScraper
         }
     }
 
-    protected void time(String msg,Runnable r) 
+    protected final void time(String msg,Runnable r) 
     {
         System.out.println(msg+"...");
         long time1 = System.currentTimeMillis();
@@ -162,7 +124,7 @@ public abstract class SearchResultsScraper
         } while ( true );
     }
 
-    protected String resolveRelativeURL(String url) 
+    protected final String resolveRelativeURL(String url) 
     {
         final String current = driver.getCurrentUrl();
         try {
@@ -173,7 +135,7 @@ public abstract class SearchResultsScraper
         }
     }
 
-    protected <T> Stream<T> streamopt(Optional<T> opt) 
+    protected static <T> Stream<T> streamopt(Optional<T> opt) 
     {
         return opt.isPresent() ? Stream.of(opt.get()) :  Stream.empty();
     }
@@ -207,7 +169,7 @@ public abstract class SearchResultsScraper
         return result;
     }
     
-    public void setSavePages(boolean savePages) {
+    public final void setSavePages(boolean savePages) {
         this.savePages = savePages;
     }
     

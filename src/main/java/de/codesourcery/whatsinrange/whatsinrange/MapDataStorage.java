@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +45,12 @@ CREATE TABLE poi_nodes (
         n.omsmNodeName = rs.getString("osm_node_name");
         n.nodeType = NodeType.fromDbIdentifier( rs.getString("node_type" ) );
         n.hvvName = rs.getString("hvv_name");
-        n.minutesToCentralStation = rs.getFloat("minutes_to_central_station");
+        final float minutes = rs.getFloat("minutes_to_central_station");
+        if ( rs.wasNull() ) {
+            n.timeToCentralStation = null;
+        } else {
+            n.timeToCentralStation = Duration.ofMinutes( (long) minutes ); 
+        }
         n.osmNodeLocation = Coordinates.fromPostGISPoint( rs.getString( "location" ) );
         return n;
     };
@@ -72,7 +78,11 @@ CREATE TABLE poi_nodes (
                             stmt.setString(2,n.omsmNodeName);
                             stmt.setString(3,n.nodeType.getDbIdentifier());
                             stmt.setString(4,n.hvvName);
-                            stmt.setFloat(5,n.minutesToCentralStation);
+                            if ( n.timeToCentralStation == null ) {
+                                stmt.setNull(5,java.sql.Types.FLOAT);
+                            } else {
+                                stmt.setFloat(5,n.timeToCentralStation.getSeconds()/60f);
+                            }
                             stmt.setDouble(6, n.osmNodeLocation.longitude);
                             stmt.setDouble(7, n.osmNodeLocation.latitude);
                             stmt.addBatch();
@@ -102,14 +112,20 @@ CREATE TABLE poi_nodes (
                 @Override
                 public Void doInConnection(Connection con) throws SQLException, DataAccessException {
 
-                    final String sql = "UPDATE "+POI_NODES+" SET osm_node_id=?,osm_node_name=?,node_type=?::nodeType,hvv_name=?,minutes_to_central_station=?,osm_location=ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE node_id=?";
+                    final String sql = "UPDATE "+POI_NODES+" SET osm_node_id=?,osm_node_name=?,node_type=?::node_type,hvv_name=?,minutes_to_central_station=?,osm_location=ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE node_id=?";
                     try ( PreparedStatement stmt = con.prepareStatement(sql) ) {
-                        for ( POINode n : toInsert ) {
+                        for ( POINode n : toUpdate ) {
                             stmt.setLong(1, n.osmNodeId );
                             stmt.setString(2,n.omsmNodeName);
                             stmt.setString(3,n.nodeType.getDbIdentifier());
                             stmt.setString(4,n.hvvName);
-                            stmt.setFloat(5,n.minutesToCentralStation);
+
+                            if ( n.timeToCentralStation == null ) {
+                                stmt.setNull(5,java.sql.Types.FLOAT);
+                            } else {
+                                stmt.setFloat(5,n.timeToCentralStation.getSeconds()/60f);
+                            }
+                            
                             stmt.setDouble(6, n.osmNodeLocation.longitude);
                             stmt.setDouble(7, n.osmNodeLocation.latitude);
                             stmt.setLong(8, n.nodeId);
@@ -157,5 +173,14 @@ CREATE TABLE poi_nodes (
     @Override
     public void setDataSource(DataSource dataSource) {
         super.setDataSource(dataSource);
+    }
+
+    @Transactional    
+    @Override
+    public List<POINode> getAllNodesWithNoTravelTime() 
+    {
+        final String sql = "SELECT node_id,osm_node_id,osm_node_name,node_type,hvv_name,minutes_to_central_station,ST_AsText(osm_location) AS location "
+                + "FROM "+POI_NODES+" WHERE minutes_to_central_station IS NULL";
+        return query(sql, ROW_MAPPER );
     }
 }
