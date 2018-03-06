@@ -1,6 +1,10 @@
 package de.codesourcery.whatsinrange.whatsinrange;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +16,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+
+import com.gargoylesoftware.htmlunit.javascript.host.intl.DateTimeFormat;
 
 public class HVVScraper extends SearchResultsScraper
 {
@@ -31,6 +37,19 @@ public class HVVScraper extends SearchResultsScraper
 		}
 	}
 	
+	private ZonedDateTime dateToQuery;
+	
+	public HVVScraper() 
+	{
+	    final int hourToQuery = 8;
+	    final int minuteToQuery = 0;
+	    ZonedDateTime nextMonday = ZonedDateTime.now().withZoneSameLocal(ZoneId.of("Europe/Berlin"));
+	    while ( nextMonday.getDayOfWeek() != DayOfWeek.MONDAY || nextMonday.isBefore( ZonedDateTime.now() ) ) {
+	        nextMonday = nextMonday.plusDays( 1 ); 
+	    }
+	    dateToQuery = nextMonday.withHour( hourToQuery ).withMinute( minuteToQuery ).withSecond( 0 ).withNano( 0 );
+	}
+	
 	public SearchResult query(POINode node) 
 	{
         loadPage("search_start", "http://www.hvv.de");
@@ -40,13 +59,16 @@ public class HVVScraper extends SearchResultsScraper
         WebElement destination = driver.findElementById("ziel");
         destination.sendKeys( DESTINATION );
         
+        final String dateString = DateTimeFormatter.ofPattern("dd.MM.yyyy").format( dateToQuery );
+        final String timeString = DateTimeFormatter.ofPattern("HH:mm").format( dateToQuery );
+        
         WebElement date = driver.findElementById("datum");
         date.clear();
-        date.sendKeys( "05.03.2018" );        
+        date.sendKeys( dateString );        
         
         WebElement time = driver.findElementById("uhrzeit");
         time.clear();
-        time.sendKeys( "08:00" );
+        time.sendKeys( timeString );
         WebElement arrival = driver.findElementById("ankunft");
         arrival.click();
         WebElement searchButton = driver.findElementByName("suchen");

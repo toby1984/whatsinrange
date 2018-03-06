@@ -193,8 +193,8 @@ CREATE TABLE poi_nodes (
          */
         final String constraint = withTravelData ? "WHERE minutes_to_central_station IS NOT NULL" : "";
         final String sql = "SELECT node_id,osm_node_id,osm_node_name,node_type,hvv_name,minutes_to_central_station,ST_AsText(osm_location) AS location,"
-                + "ST_DISTANCE(osm_location,ST_SetSRID(ST_MakePoint(?, ?), 4326)) AS distance FROM "+POI_NODES+" "+constraint+" ORDER BY distance ASC LIMIT 1";
-        final List<POINode> result = query(sql,new Object[] {longitude,latitude}, ROW_MAPPER );
+                + "ST_DISTANCE(osm_location,ST_SetSRID(ST_MakePoint(?, ?), 4326)) AS distance FROM "+POI_NODES+" "+constraint+" ORDER BY osm_location <-> ST_SetSRID(ST_MakePoint(?, ?), 4326) ASC LIMIT 1";
+        final List<POINode> result = query(sql,new Object[] {longitude,latitude,longitude,latitude}, ROW_MAPPER );
         if ( result.size() > 1 ) {
             throw new RuntimeException("Result set size > 1 ?");
         }

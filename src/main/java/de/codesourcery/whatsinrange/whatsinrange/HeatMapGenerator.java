@@ -23,6 +23,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class HeatMapGenerator {
 
+    private static final double MAX_WEIGHT = 10d;
+    
     @Autowired
     private IMapDataStorage datastorage;
 
@@ -84,24 +86,21 @@ public class HeatMapGenerator {
                         {
                             try 
                             {
-                                final Optional<POINode> closest = datastorage.findClosestNode( finalLong, finalLat , true );
-                                if ( closest.isPresent() ) 
+                                final POINode closest = datastorage.findClosestNode( finalLong, finalLat , true ).get();
+                                final Coordinates coords = new Coordinates();
+                                coords.longitude = finalLong;
+                                coords.latitude = finalLat;                                    
+                                double distance = calcDistance(closest.osmNodeLocation,coords);
+                                float minutes = closest.timeToCentralStation.getSeconds()/60f;
+                                minutes += (distance/60f); // + distance * 1 m/s
+                                
+                                final HeatmapData data = new HeatmapData();
+                                data.latitude = finalLat;
+                                data.longitude = finalLong;
+                                data.weight = minutes;                                    
+                                synchronized( list ) 
                                 {
-                                    final Coordinates coords = new Coordinates();
-                                    coords.longitude = finalLong;
-                                    coords.latitude = finalLat;                                    
-                                    double distance = calcDistance(closest.get().osmNodeLocation,coords);
-                                    float minutes = closest.get().timeToCentralStation.getSeconds()/60f;
-                                    minutes += (distance/60f); // + distance * 1 m/s
-                                    
-                                    final HeatmapData data = new HeatmapData();
-                                    data.latitude = finalLat;
-                                    data.longitude = finalLong;
-                                    data.weight = minutes;                                    
-                                    synchronized( list ) 
-                                    {
-                                        list.add( data );
-                                    }
+                                    list.add( data );
                                 }
                             } 
                             finally 
@@ -149,7 +148,7 @@ public class HeatMapGenerator {
                         minweight = (float)data.weight;
                     }
                 }
-                scaleFactor = 10d/(maxweight-minweight); // 0..10
+                scaleFactor = MAX_WEIGHT/(maxweight-minweight); // 0..10
             }
             
             writer.println("window.heatMapData = ["); // GLOBAL VARIABLE....BAD...
@@ -160,6 +159,9 @@ public class HeatMapGenerator {
                 if ( scale ) {
                     weight = (weight - minweight) * scaleFactor;
                 } 
+                if ( data.weight > 30 ) {
+                    weight = MAX_WEIGHT;
+                }
                 if ( first ) {
                     writer.print( "{location: new google.maps.LatLng("+data.latitude+", "+data.longitude+"), weight: "+weight+"}");
                     first = false;
@@ -173,20 +175,20 @@ public class HeatMapGenerator {
              * write markers
              */
             
-            writer.println("window.calcMarkerData = function(theMap) { "
-                    + " return [ "); // GLOBAL VARIABLE....BAD...
-            first = true;
-            for ( HeatmapData data : list ) 
-            {
-                final String title = "Time: "+data.weight+"m";
-                if ( first ) {
-                    writer.print( "new google.maps.Marker({position: new google.maps.LatLng("+data.latitude+", "+data.longitude+"), map: theMap, title: '"+title+"'})");
-                    first = false;
-                } else {
-                    writer.print( ",\nnew google.maps.Marker({position: new google.maps.LatLng("+data.latitude+", "+data.longitude+"), map: theMap, title: '"+title+"'})");
-                }
-            }
-            writer.println("];\n};");            
+//            writer.println("window.calcMarkerData = function(theMap) { "
+//                    + " return [ "); // GLOBAL VARIABLE....BAD...
+//            first = true;
+//            for ( HeatmapData data : list ) 
+//            {
+//                final String title = "Time: "+data.weight+"m";
+//                if ( first ) {
+//                    writer.print( "new google.maps.Marker({position: new google.maps.LatLng("+data.latitude+", "+data.longitude+"), map: theMap, title: '"+title+"'})");
+//                    first = false;
+//                } else {
+//                    writer.print( ",\nnew google.maps.Marker({position: new google.maps.LatLng("+data.latitude+", "+data.longitude+"), map: theMap, title: '"+title+"'})");
+//                }
+//            }
+//            writer.println("];\n};");            
         }
     }
 

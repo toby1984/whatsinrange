@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+       #map {
+        height: 800px;
+        width: 100%;
+       }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script src="apikey.js"></script>       
+    <script src="data.js"></script>
+    <script>
+    function loadJS(url, onLoadCallback, location){
+        var scriptTag = document.createElement('script');
+        scriptTag.src = url;
+
+        scriptTag.onload = onLoadCallback;
+        scriptTag.onreadystatechange = onLoadCallback;
+
+        location.appendChild(scriptTag);
+    };
+    
+    var initMap = function() 
+    {
+      alert("map init called, heatmap: "+window.heatMapData.length);    	
+      var hamburg = {lng: 9.787741, lat: 53.5584902};
+      var map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 11,
+        center: hamburg
+      });
+/*       var marker = new google.maps.Marker({
+        position: hamburg,
+        map: map
+      }); */
+      // var markers = window.calcMarkerData(map);
+      var heatmap = new google.maps.visualization.HeatmapLayer({
+     	  data: window.heatMapData
+     	});
+      heatmap.setMap(map);   
+      
+      // heatmap.set('dissipating', false);      
+      // heatmap.set('maxIntensity', 10.0); // must match max. weight calculated during heatmap data generation      
+      heatmap.set('radius', 10);
+      heatmap.set('opacity', 0.3);
+    }    
+    
+    alert("data loaded: "+window.heatMapData);
+    alert("API key loaded: "+window.myApiKey);
+   	var url = "https://maps.googleapis.com/maps/api/js?key="+window.apiKey+"&callback=initMap&libraries=visualization";
+    loadJS(url, new function() {}, document.body );        	
+    </script>
+  </body>
+</html>
