@@ -149,8 +149,39 @@ CREATE TABLE poi_nodes (
     
     @Transactional
     @Override
-    public Optional<POINode> findClosestNode(Coordinates coordinates) 
-    {
+    public double distance(Coordinates point1,Coordinates point2) {
+        final String sql = "SELECT ST_DISTANCE(ST_SetSRID(ST_MakePoint(?, ?),4326),ST_SetSRID(ST_MakePoint(?, ?),4326))";
+        
+        return execute( (ConnectionCallback<Double>) con -> 
+        {
+            try ( PreparedStatement stmt = con.prepareStatement(sql) ) 
+            {
+                stmt.setDouble(1,point1.longitude);
+                stmt.setDouble(2,point1.latitude);
+                stmt.setDouble(3,point2.longitude);
+                stmt.setDouble(4,point2.latitude);
+                try ( ResultSet rs = stmt.executeQuery() )
+                {
+                    Double result = null;
+                    if ( rs.next() ) {
+                        final double tmp = rs.getDouble(1);
+                        if ( ! rs.wasNull() ) {
+                            result = tmp;
+                        }
+                    }
+                    if ( result == null ) {
+                        throw new IllegalStateException("Scalar distance query returned no result ?");
+                    }
+                    return result.doubleValue();
+                }
+            }
+        });
+    }
+    
+    @Override
+    @Transactional
+    public Optional<POINode> findClosestNode(double longitude, double latitude,boolean withTravelData) {
+
         /*
   node_id bigint PRIMARY KEY NOT NULL,
   osm_node_id bigint UNIQUE NOT NULL,
@@ -160,13 +191,22 @@ CREATE TABLE poi_nodes (
   minutes_to_central_station float DEFAULT NULL,
   osm_location geography(POINT)         
          */
+        final String constraint = withTravelData ? "WHERE minutes_to_central_station IS NOT NULL" : "";
         final String sql = "SELECT node_id,osm_node_id,osm_node_name,node_type,hvv_name,minutes_to_central_station,ST_AsText(osm_location) AS location,"
-                + "ST_DISTANCE(osm_location,ST_SetSRID(ST_MakePoint(?, ?), 4326)) AS distance FROM "+POI_NODES+" ORDER BY distance ASC LIMIT 1";
-        final List<POINode> result = query(sql,new Object[] {coordinates.longitude,coordinates.latitude}, ROW_MAPPER );
+                + "ST_DISTANCE(osm_location,ST_SetSRID(ST_MakePoint(?, ?), 4326)) AS distance FROM "+POI_NODES+" "+constraint+" ORDER BY distance ASC LIMIT 1";
+        final List<POINode> result = query(sql,new Object[] {longitude,latitude}, ROW_MAPPER );
         if ( result.size() > 1 ) {
             throw new RuntimeException("Result set size > 1 ?");
         }
         return result.isEmpty() ? Optional.empty() : Optional.of( result.get(0) );
+            
+    }
+    
+    @Transactional
+    @Override
+    public Optional<POINode> findClosestNode(Coordinates coordinates,boolean withTravelData) 
+    {
+        return findClosestNode(coordinates.longitude,coordinates.latitude,withTravelData);
     }
 
     @Autowired

@@ -26,5 +26,6 @@ CREATE TABLE poi_nodes (
 
 CREATE INDEX poi_nodes_location ON poi_nodes USING GIST(osm_location);
 CREATE INDEX poi_nodes_node_type ON poi_nodes(node_type);
+CREATE INDEX poi_nodes_no_time ON poi_nodes(minutes_to_central_station) WHERE minutes_to_central_station IS NULL;
 
 COMMIT;

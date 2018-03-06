@@ -1,7 +1,9 @@
 package de.codesourcery.whatsinrange.whatsinrange;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
@@ -22,6 +24,9 @@ public class App
     
     @Autowired
     private DataEnhancer dataEnhancer;
+    
+    @Autowired
+    private HeatMapGenerator heatmapGenerator;
 
     @Transactional
     public void importData(InputStream in) throws FileNotFoundException, XMLStreamException 
@@ -59,5 +64,10 @@ public class App
     public void enhanceData() 
     {
         dataEnhancer.run();
+    }
+    
+    public void generateHeatMap(Coordinates min,Coordinates max, int steps,OutputStream out) throws IOException 
+    {
+        heatmapGenerator.generateHeatMap(min,max,(int) (steps*1.5f),steps,out);
     }
 }

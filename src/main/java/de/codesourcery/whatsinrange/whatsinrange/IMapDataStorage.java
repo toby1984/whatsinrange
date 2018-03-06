@@ -8,9 +8,13 @@ public interface IMapDataStorage {
 
     public void saveOrUpdate(Collection<POINode> nodes);
     
-    public Optional<POINode> findClosestNode(Coordinates coordinates);
+    public Optional<POINode> findClosestNode(double longitude, double latitude,boolean withTravelData);
+    
+    public Optional<POINode> findClosestNode(Coordinates coordinates,boolean withTravelData);
 
     public Optional<POINode> getNode(long id);
     
     public List<POINode> getAllNodesWithNoTravelTime();
+
+    double distance(Coordinates point1, Coordinates point2);
 }

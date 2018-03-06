@@ -17,7 +17,41 @@ public class Coordinates
         this.longitude = longitude;
         this.latitude = latitude;
     }
+    
+    public static final class LongBuilder 
+    {
+        private final double longitude;
+        
+        public LongBuilder(double longitude) {
+            this.longitude = longitude;
+        }
+        
+        public Coordinates latitude(double latitude) {
+            return new Coordinates(longitude,latitude);
+        }
+    }
+    
+    public static final class LatBuilder 
+    {
+        private final double latitude;
+        
+        public LatBuilder(double latitude) {
+            this.latitude = latitude;
+        }
+        
+        public Coordinates longitude(double longitude) {
+            return new Coordinates(longitude,latitude);
+        }
+    }    
 
+    public static LongBuilder lng(double longitude) {
+        return new LongBuilder(longitude);
+    }
+    
+    public static LatBuilder lat(double latitude) {
+        return new LatBuilder(latitude);
+    }    
+    
     public Coordinates(Coordinates coordinates) {
         this.longitude = coordinates.longitude;
         this.latitude = coordinates.latitude;
