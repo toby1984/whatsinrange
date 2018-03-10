@@ -17,13 +17,15 @@ public class Main
             final String map = "/hamburg.osm";
             final InputStream in = App.class.getResourceAsStream( map );            
             final App app = ctx.getBean(App.class);
-            // app.importData(in);
+            long time1 = System.currentTimeMillis();
+//             app.importData(in);
+             long time2 = System.currentTimeMillis();
+             System.out.println("Import took "+(time2-time1)+" ms");
             
 //            app.enhanceData( new ConsoleChoiceCallback() );
             
             final FileOutputStream out = new FileOutputStream("/home/tobi/oxygen_workspace/whatsinrange/src/main/resources/data.js");
 
-              // <bounds minlat="53.5313000" minlon="9.2972000" maxlat="53.9698000" maxlon="10.6924000"/>
             Coordinates min = Coordinates.lat(53.5313000).longitude(9.2972000);
             Coordinates max = Coordinates.lat(53.9698000).longitude(10.6924000);
             

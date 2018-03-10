@@ -3,6 +3,10 @@ package de.codesourcery.whatsinrange.whatsinrange;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.gavaghan.geodesy.Ellipsoid;
+import org.gavaghan.geodesy.GeodeticCalculator;
+import org.gavaghan.geodesy.GlobalPosition;
+
 public class Coordinates 
 {
     private static final String FLOAT_REGEX = "[+\\-]?[0-9]*(\\.[0-9]+)?";
@@ -77,7 +81,17 @@ public class Coordinates
     public String toString() {
         return "lon="+longitude+" | lat="+latitude;
     }
+    
     public Coordinates createCopy() {
         return new Coordinates(this);
     }
+    
+    public double calcDistance(Coordinates point2) 
+    {
+        final GeodeticCalculator geoCalc = new GeodeticCalculator();
+        Ellipsoid reference = Ellipsoid.WGS84;  
+        GlobalPosition pointA = new GlobalPosition(this.latitude, this.longitude, 0.0); // Point A
+        GlobalPosition userPos = new GlobalPosition(point2.latitude, point2.longitude, 0.0); // Point B
+        return geoCalc.calculateGeodeticCurve(reference, userPos, pointA).getEllipsoidalDistance();        
+    }    
 }

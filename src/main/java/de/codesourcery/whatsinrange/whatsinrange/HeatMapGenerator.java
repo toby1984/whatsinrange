@@ -72,6 +72,12 @@ public class HeatMapGenerator {
             double longitude = min.longitude; // Längengrad , X axis
             double latitude = min.latitude; // Breitengrad, Y axis
 
+            Coordinates tmp = Coordinates.lng( max.longitude).latitude( min.latitude );
+            System.out.println("Distance on X-axis: "+min.calcDistance( tmp )+" meters" );
+            
+            tmp = Coordinates.lng( min.longitude).latitude( max.latitude );
+            System.out.println("Distance on Y-axis: "+min.calcDistance( tmp )+" meters" );
+            
             final Object TIME_LOCK = new Object();
             final CountDownLatch latch = new CountDownLatch( (int) totalPoints );
             final List<HeatmapData> list = new ArrayList<HeatmapData>( (int) totalPoints );
@@ -94,7 +100,7 @@ public class HeatMapGenerator {
                                 final Coordinates coords = new Coordinates();
                                 coords.longitude = finalLong;
                                 coords.latitude = finalLat;                                    
-                                double distance = calcDistance(closest.osmNodeLocation,coords);
+                                double distance = closest.osmNodeLocation.calcDistance(coords);
                                 float minutes = closest.timeToCentralStation.getSeconds()/60f;
                                 minutes += (distance/60f); // + distance * 1 m/s
                                 
@@ -194,14 +200,5 @@ public class HeatMapGenerator {
             }
             writer.println("];\n};");            
         }
-    }
-
-    private double calcDistance(Coordinates point1,Coordinates point2) 
-    {
-        final GeodeticCalculator geoCalc = new GeodeticCalculator();
-        Ellipsoid reference = Ellipsoid.WGS84;  
-        GlobalPosition pointA = new GlobalPosition(point1.latitude, point1.longitude, 0.0); // Point A
-        GlobalPosition userPos = new GlobalPosition(point2.latitude, point2.longitude, 0.0); // Point B
-        return geoCalc.calculateGeodeticCurve(reference, userPos, pointA).getEllipsoidalDistance();        
     }
 }

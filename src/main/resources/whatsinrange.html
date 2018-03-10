@@ -54,9 +54,10 @@
       myLoad("data.js", function() {
        	  log("data loaded: "+window.heatMapData);    	  
           log("map init called, heatmap: "+window.heatMapData.length);    	
-          var hamburg = {lng: 9.787741, lat: 53.5584902};
+
+          var hamburg = {lng: 9.9524556, lat: 53.6195287};
           var map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 11,
+            zoom: 12,
             center: hamburg
           });
           if ( window.calcMarkerData ) {
