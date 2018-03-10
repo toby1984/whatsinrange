@@ -22,7 +22,7 @@ public abstract class SearchResultsScraper implements AutoCloseable
 {
     private static final Logger LOG = LogManager.getLogger( SearchResultsScraper.class );
 
-    private boolean savePages = false;
+    private boolean savePages = true;
 
     protected PhantomJSDriver driver;   
 

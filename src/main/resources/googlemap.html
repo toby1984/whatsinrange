@@ -7,50 +7,77 @@
         width: 100%;
        }
     </style>
-  </head>
-  <body>
-    <div id="map"></div>
-    <script src="apikey.js"></script>       
-    <script src="data.js"></script>
+    <script src="apikey.js"></script>      
     <script>
-    function loadJS(url, onLoadCallback, location){
+    function log(mesg) {
+    	if ( console && console.log ) {
+    		console.log(mesg);
+    	}
+    }
+    
+    function myLoad(url,callback) {
+    	var xhttp = new XMLHttpRequest();
+    	xhttp.onreadystatechange = function() {
+    	    if (xhttp.readyState == 4 && xhttp.status == 200) 
+    	    {
+    	    	var geval=eval;
+    	    	geval( xhttp.responseText );
+    	    	callback();
+    	    }
+    	};
+    	xhttp.responseType = "text";
+    	xhttp.open("GET", url, true);
+    	xhttp.send();
+    };
+    
+    function loadJS(url, onLoadCallback){
         var scriptTag = document.createElement('script');
         scriptTag.src = url;
 
-        scriptTag.onload = onLoadCallback;
         scriptTag.onreadystatechange = onLoadCallback;
 
-        location.appendChild(scriptTag);
+        if ( document.body.childNodes.length > 0 ) {
+          var child = document.head.childNodes[0];
+          document.head.insertBefore( scriptTag, child );
+        } else {
+          document.head.appendChild(scriptTag);
+        }
     };
-    
+    </script>     
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
     var initMap = function() 
     {
-      alert("map init called, heatmap: "+window.heatMapData.length);    	
-      var hamburg = {lng: 9.787741, lat: 53.5584902};
-      var map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 11,
-        center: hamburg
-      });
-/*       var marker = new google.maps.Marker({
-        position: hamburg,
-        map: map
-      }); */
-      // var markers = window.calcMarkerData(map);
-      var heatmap = new google.maps.visualization.HeatmapLayer({
-     	  data: window.heatMapData
-     	});
-      heatmap.setMap(map);   
-      
-      // heatmap.set('dissipating', false);      
-      // heatmap.set('maxIntensity', 10.0); // must match max. weight calculated during heatmap data generation      
-      heatmap.set('radius', 10);
-      heatmap.set('opacity', 0.3);
-    }    
+      myLoad("data.js", function() {
+       	  log("data loaded: "+window.heatMapData);    	  
+          log("map init called, heatmap: "+window.heatMapData.length);    	
+          var hamburg = {lng: 9.787741, lat: 53.5584902};
+          var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 11,
+            center: hamburg
+          });
+          if ( window.calcMarkerData ) {
+            window.calcMarkerData(map);
+          }
+          var heatmap = new google.maps.visualization.HeatmapLayer({
+         	  data: window.heatMapData
+         	});
+          heatmap.setMap(map);   
+          
+          // heatmap.set('dissipating', false);      
+          // heatmap.set('maxIntensity', 10.0); // must match max. weight calculated during heatmap data generation      
+          heatmap.set('radius', 10);
+          heatmap.set('opacity', 0.3);     	  
+      });   	  
+    };   
     
-    alert("data loaded: "+window.heatMapData);
-    alert("API key loaded: "+window.myApiKey);
+    log("API key loaded: "+window.apiKey);
    	var url = "https://maps.googleapis.com/maps/api/js?key="+window.apiKey+"&callback=initMap&libraries=visualization";
-    loadJS(url, new function() {}, document.body );        	
+    loadJS(url, function() 
+    {
+    });        	
     </script>
   </body>
 </html>

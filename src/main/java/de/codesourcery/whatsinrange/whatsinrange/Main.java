@@ -17,15 +17,15 @@ public class Main
             final InputStream in = App.class.getResourceAsStream( map );            
             final App app = ctx.getBean(App.class);
             // app.importData(in);
-            app.enhanceData();
+            // app.enhanceData();
             
-//            final FileOutputStream out = new FileOutputStream("/home/tobi/oxygen_workspace/whatsinrange/src/main/resources/data.js");
-//            
-//            //   <bounds minlat="53.4390000" minlon="9.6982000" maxlat="53.6656000" maxlon="10.3141000"/>
-//            Coordinates min = new Coordinates(9.6982000,53.4390000);
-//            Coordinates max = new Coordinates(10.3141000,53.6656000);
-//            
-//            app.generateHeatMap(min,max,100,out);
+            final FileOutputStream out = new FileOutputStream("/home/tobi/oxygen_workspace/whatsinrange/src/main/resources/data.js");
+
+              // <bounds minlat="53.5313000" minlon="9.2972000" maxlat="53.9698000" maxlon="10.6924000"/>
+            Coordinates min = Coordinates.lat(53.5313000).longitude(9.2972000);
+            Coordinates max = Coordinates.lat(53.9698000).longitude(10.6924000);
+            
+            app.generateHeatMap(min,max,100,out);
         }
     }
 }

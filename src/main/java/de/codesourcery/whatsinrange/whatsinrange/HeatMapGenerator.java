@@ -159,9 +159,9 @@ public class HeatMapGenerator {
                 if ( scale ) {
                     weight = (weight - minweight) * scaleFactor;
                 } 
-                if ( data.weight > 30 ) {
-                    weight = MAX_WEIGHT;
-                }
+//                if ( data.weight > 30 ) {
+//                    weight = MAX_WEIGHT;
+//                }
                 if ( first ) {
                     writer.print( "{location: new google.maps.LatLng("+data.latitude+", "+data.longitude+"), weight: "+weight+"}");
                     first = false;
@@ -175,20 +175,21 @@ public class HeatMapGenerator {
              * write markers
              */
             
-//            writer.println("window.calcMarkerData = function(theMap) { "
-//                    + " return [ "); // GLOBAL VARIABLE....BAD...
-//            first = true;
-//            for ( HeatmapData data : list ) 
-//            {
-//                final String title = "Time: "+data.weight+"m";
-//                if ( first ) {
-//                    writer.print( "new google.maps.Marker({position: new google.maps.LatLng("+data.latitude+", "+data.longitude+"), map: theMap, title: '"+title+"'})");
-//                    first = false;
-//                } else {
-//                    writer.print( ",\nnew google.maps.Marker({position: new google.maps.LatLng("+data.latitude+", "+data.longitude+"), map: theMap, title: '"+title+"'})");
-//                }
-//            }
-//            writer.println("];\n};");            
+            writer.println("window.calcMarkerData = function(theMap) {\n"
+                    + " return [ "); // GLOBAL VARIABLE....BAD...
+            
+            first = true;
+            for ( POINode node : datastorage.getAllNodesWithNoTravelTime() ) {
+                final String title = "Name: "+node.hvvName;
+                final Coordinates data = node.osmNodeLocation;
+                if ( first ) {
+                    writer.print( "new google.maps.Marker({position: new google.maps.LatLng("+data.latitude+", "+data.longitude+"), map: theMap, title: \""+title+"\"})");
+                    first = false;
+                } else {
+                    writer.print( ",\nnew google.maps.Marker({position: new google.maps.LatLng("+data.latitude+", "+data.longitude+"), map: theMap, title: \""+title+"\"})");
+                }            	
+            }
+            writer.println("];\n};");            
         }
     }
 

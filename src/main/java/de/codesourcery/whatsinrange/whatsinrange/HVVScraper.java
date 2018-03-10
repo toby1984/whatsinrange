@@ -28,7 +28,7 @@ public class HVVScraper extends SearchResultsScraper
 	public static void main(String[] args) throws Exception 
 	{
 		final POINode n = new POINode();
-		n.hvvName = "Grundstrasse";
+		n.hvvName = "Heidkoppelweg";
 		try ( HVVScraper scraper = new HVVScraper() ) {
 		    SearchResult result = scraper.query( n );
 		    System.out.println("got: "+result);
@@ -75,10 +75,13 @@ public class HVVScraper extends SearchResultsScraper
         LOG.debug("Started to search...");
         
         // wait for results
-        driver.findElementByCssSelector("form[action='/jsf/showSearchResult.seam']");
+        try {
+        	driver.findElementByCssSelector("form[action='/jsf/showSearchResult.seam']");
+        } catch(RuntimeException e) {
+        	dump("search_results");
+        	throw e;
+        }
 		LOG.debug("Extracting results");
-		
-		dump("search_results");
 		
 		final List<WebElement> rows = driver.findElementsByCssSelector("tr[class=\"noborder\"]");
 		final List<Duration> travelTimes = new ArrayList<>();
