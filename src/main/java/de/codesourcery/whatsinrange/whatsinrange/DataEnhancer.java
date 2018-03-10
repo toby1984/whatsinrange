@@ -1,5 +1,6 @@
 package de.codesourcery.whatsinrange.whatsinrange;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Component;
 public class DataEnhancer implements AutoCloseable, DisposableBean
 {
     private static final Logger LOG = LogManager.getLogger( HVVScraper.class );
+    
+    private static final Duration GRACE_PERIOD = Duration.ofSeconds(2);
 
     // @GuardedBy(POOL_LOCK)    
     private final ThreadPoolExecutor threadPool;
@@ -37,7 +40,7 @@ public class DataEnhancer implements AutoCloseable, DisposableBean
     public DataEnhancer() 
     {
         final BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(300);
-        threadPool = new ThreadPoolExecutor( 30,30,60,TimeUnit.SECONDS,workQueue );
+        threadPool = new ThreadPoolExecutor( 20,20,60,TimeUnit.SECONDS,workQueue );
     }
 
     public void run() 
@@ -62,6 +65,9 @@ public class DataEnhancer implements AutoCloseable, DisposableBean
                 {
                     try 
                     {
+                    	if ( GRACE_PERIOD != null ) {
+                    		Thread.sleep( GRACE_PERIOD.getSeconds()*1000 );
+                    	}
                         HVVScraper scraper=null;
                         synchronized( POOL_LOCK ) {
                             if ( ! shutdown ) {

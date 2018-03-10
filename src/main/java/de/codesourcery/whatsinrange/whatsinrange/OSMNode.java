@@ -39,17 +39,37 @@ public final class OSMNode
     public boolean isBusStop() {
         return isBusStop( this.tags );
     }
+    
+    public boolean isTrainStation() {
+    	return isTrainStation( this.tags );
+    }
 
     public static boolean isBusStop(Map<String,String> tags) {
-        return "bus_stop".equals( tags.get("highway") );
+    	return contains("bus","yes",tags) && 
+    		   contains("public_transport","stop_position",tags) && 
+    		   tags.containsKey("name");
     }
 
     public static boolean isSubwayHalt(Map<String,String> tags) {
-        return "subway".equals( tags.get("station") );
+        return contains("subway","yes",tags) &&
+             contains("public_transport","stop_position",tags) &&
+             tags.containsKey("name");
     }
-
+    
+    public static boolean isTrainStation(Map<String,String> tags) {
+        return contains("train","yes",tags) &&
+             contains("railway","halt",tags) &&
+             tags.containsKey("name");
+    }
+    
+    private static boolean contains(String key,String value,Map<String,String> tags) {
+    	return value.equals( tags.get(key ) );
+    }
+    
     public static boolean isLightRailHalt(Map<String,String> tags) {
-        return "light_rail".equals( tags.get("station") );
+        return contains("light_rail","yes",tags) &&
+                contains("public_transport","stop_position",tags) &&
+                tags.containsKey("name");
     }        
 
     public static NodeType getNodeType(Map<String,String> tags) 
@@ -60,6 +80,8 @@ public final class OSMNode
             return NodeType.SUBWAY_STATION;
         } else if ( isLightRailHalt( tags ) ) {
             return NodeType.LIGHT_RAIL_STATION;
+        } else if ( isTrainStation( tags ) ) {
+        	return NodeType.TRAIN_STATION;
         }
         return NodeType.UNKNOWN;
     }        

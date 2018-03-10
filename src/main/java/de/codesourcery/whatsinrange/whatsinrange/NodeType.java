@@ -4,6 +4,7 @@ public enum NodeType {
     BUS_STOP("bus_stop"),
     SUBWAY_STATION("subway_station"),
     LIGHT_RAIL_STATION("light_rail_station"),
+    TRAIN_STATION("train_station"),
     UNKNOWN("unknown");
     
     private final String dbIdentifier;
@@ -21,6 +22,7 @@ public enum NodeType {
             case "bus_stop": return NodeType.BUS_STOP;
             case "subway_station": return NodeType.SUBWAY_STATION;
             case "light_rail_station": return NodeType.LIGHT_RAIL_STATION;
+            case "train_station": return NodeType.TRAIN_STATION;
             case "unknown": return NodeType.UNKNOWN;
             default:
                 throw new IllegalArgumentException("Unhandled node db identifier: '"+id+"'");

@@ -17,8 +17,6 @@ import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.gargoylesoftware.htmlunit.javascript.host.intl.DateTimeFormat;
-
 public class HVVScraper extends SearchResultsScraper
 {
     private static final Logger LOG = LogManager.getLogger( HVVScraper.class );

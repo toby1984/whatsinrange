@@ -8,7 +8,7 @@ BEGIN;
 
 CREATE EXTENSION postgis;
 
-CREATE TYPE node_type AS ENUM ('bus_stop', 'subway_station','light_rail_station','unknown');
+CREATE TYPE node_type AS ENUM ('bus_stop', 'subway_station','light_rail_station','train_station','unknown');
 
 DROP SEQUENCE IF EXISTS poi_nodes_seq;
 
