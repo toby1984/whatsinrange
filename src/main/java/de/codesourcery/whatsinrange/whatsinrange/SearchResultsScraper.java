@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -22,7 +23,8 @@ public abstract class SearchResultsScraper implements AutoCloseable
 {
     private static final Logger LOG = LogManager.getLogger( SearchResultsScraper.class );
 
-    private boolean savePages = true;
+    private boolean savePages = false;
+    private Duration timeout = Duration.ofSeconds( 10 );
 
     protected PhantomJSDriver driver;   
 
@@ -34,9 +36,13 @@ public abstract class SearchResultsScraper implements AutoCloseable
     {
         final DesiredCapabilities caps = createCapabilities();
         final PhantomJSDriver driver = new PhantomJSDriver(caps);
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait( timeout.getSeconds() , TimeUnit.SECONDS);
         return driver;
     } 
+    
+    public void setTimeout(Duration timeout) {
+        this.timeout = timeout;
+    }
     
     @Override
     public void close() throws Exception {

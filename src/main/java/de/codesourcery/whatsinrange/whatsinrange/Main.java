@@ -1,6 +1,5 @@
 package de.codesourcery.whatsinrange.whatsinrange;
 
-import java.io.FileOutputStream;
 import java.io.InputStream;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -17,15 +16,16 @@ public class Main
             final InputStream in = App.class.getResourceAsStream( map );            
             final App app = ctx.getBean(App.class);
             // app.importData(in);
-            // app.enhanceData();
             
-            final FileOutputStream out = new FileOutputStream("/home/tobi/oxygen_workspace/whatsinrange/src/main/resources/data.js");
-
-              // <bounds minlat="53.5313000" minlon="9.2972000" maxlat="53.9698000" maxlon="10.6924000"/>
-            Coordinates min = Coordinates.lat(53.5313000).longitude(9.2972000);
-            Coordinates max = Coordinates.lat(53.9698000).longitude(10.6924000);
+            app.enhanceData( new ConsoleChoiceCallback() );
             
-            app.generateHeatMap(min,max,100,out);
+//            final FileOutputStream out = new FileOutputStream("/home/tobi/oxygen_workspace/whatsinrange/src/main/resources/data.js");
+//
+//              // <bounds minlat="53.5313000" minlon="9.2972000" maxlat="53.9698000" maxlon="10.6924000"/>
+//            Coordinates min = Coordinates.lat(53.5313000).longitude(9.2972000);
+//            Coordinates max = Coordinates.lat(53.9698000).longitude(10.6924000);
+//            
+//            app.generateHeatMap(min,max,100,out);
         }
     }
 }

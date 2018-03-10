@@ -3,6 +3,8 @@ package de.codesourcery.whatsinrange.whatsinrange;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,6 +18,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import de.codesourcery.whatsinrange.whatsinrange.HVVScraper.IChoiceCallback;
 
 @Component
 public class DataEnhancer implements AutoCloseable, DisposableBean
@@ -43,7 +47,7 @@ public class DataEnhancer implements AutoCloseable, DisposableBean
         threadPool = new ThreadPoolExecutor( 20,20,60,TimeUnit.SECONDS,workQueue );
     }
 
-    public void run() 
+    public void run(IChoiceCallback callback) 
     {
         final List<POINode> list = dataStorage.getAllNodesWithNoTravelTime();
         LOG.info("run(): Querying HVV for "+list.size()+" POIs");        
@@ -77,7 +81,10 @@ public class DataEnhancer implements AutoCloseable, DisposableBean
                         if ( scraper != null) 
                         {
                             final long start = System.currentTimeMillis();
-                            final SearchResult result = scraper.query( node );
+                            final SearchResult result = scraper.query( node, callback );
+                            if ( result == null ) {
+                                throw new NoSuchElementException("Failed to retrieve result");
+                            }
                             node.timeToCentralStation = result.travelTime;
                             dataStorage.saveOrUpdate( Collections.singleton( node ) );
                             final float processed = list.size() - latch.getCount();

@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import de.codesourcery.whatsinrange.whatsinrange.HVVScraper.IChoiceCallback;
+
 /**
  * Hello world!
  *
@@ -61,9 +63,9 @@ public class App
         System.out.println("Finished persisting data.");
     }    
     
-    public void enhanceData() 
+    public void enhanceData(IChoiceCallback callback) 
     {
-        dataEnhancer.run();
+        dataEnhancer.run(callback);
     }
     
     public void generateHeatMap(Coordinates min,Coordinates max, int steps,OutputStream out) throws IOException 

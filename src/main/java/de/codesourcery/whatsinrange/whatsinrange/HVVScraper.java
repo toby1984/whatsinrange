@@ -1,5 +1,8 @@
 package de.codesourcery.whatsinrange.whatsinrange;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.ZoneId;
@@ -8,14 +11,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
 
 public class HVVScraper extends SearchResultsScraper
 {
@@ -25,12 +31,26 @@ public class HVVScraper extends SearchResultsScraper
 			
 	private static final Pattern DURATION_PATTERN = Pattern.compile("^(\\d+):(\\d+)$");
 	
+    public interface IChoiceCallback 
+    {
+        public Optional<String> makeChoice(POINode node,List<String> choicesFromServer); 
+    }	
+	
 	public static void main(String[] args) throws Exception 
 	{
 		final POINode n = new POINode();
 		n.hvvName = "Heidkoppelweg";
-		try ( HVVScraper scraper = new HVVScraper() ) {
-		    SearchResult result = scraper.query( n );
+		try ( HVVScraper scraper = new HVVScraper() {
+		    @Override
+		    protected PhantomJSDriver createDriver() 
+		    {
+		        setTimeout( Duration.ofSeconds( 5 ) );
+		        return super.createDriver();
+		    }
+		}) 
+		{
+		    scraper.setSavePages( true );
+		    SearchResult result = scraper.query( n, new ConsoleChoiceCallback() );
 		    System.out.println("got: "+result);
 		}
 	}
@@ -48,7 +68,7 @@ public class HVVScraper extends SearchResultsScraper
 	    dateToQuery = nextMonday.withHour( hourToQuery ).withMinute( minuteToQuery ).withSecond( 0 ).withNano( 0 );
 	}
 	
-	public SearchResult query(POINode node) 
+	public SearchResult query(POINode node,IChoiceCallback callback)
 	{
         loadPage("search_start", "http://www.hvv.de");
         
@@ -77,9 +97,30 @@ public class HVVScraper extends SearchResultsScraper
         // wait for results
         try {
         	driver.findElementByCssSelector("form[action='/jsf/showSearchResult.seam']");
-        } catch(RuntimeException e) {
-        	dump("search_results");
-        	throw e;
+        } 
+        catch(org.openqa.selenium.NoSuchElementException e) 
+        {
+            LOG.info("failed to find results form, checking for multiple inputs");
+            try 
+            {
+                final List<WebElement> options= driver.findElementsByCssSelector("select[id='personalSearch:startSelectMenu'] option");
+                if ( options.isEmpty() ) {
+                    throw new RuntimeException("Found no options for "+node);
+                }
+                final List<String> choices = options.stream().map( element -> element.getAttribute("innerText") ).collect( Collectors.toList() );
+                final Optional<String> userChoice = callback.makeChoice( node, choices );
+                if ( ! userChoice.isPresent() || node.hvvName.equalsIgnoreCase( userChoice.get() ) ) {
+                    LOG.warn("query(): No user choice for "+node);
+                    return null;
+                }
+                LOG.info("query(): Retrying search with user choice "+userChoice.get()+" for "+node);
+                node.hvvName = userChoice.get();
+                return query( node , callback );
+            } catch(org.openqa.selenium.NoSuchElementException e2) {
+                dump("search_results");
+                LOG.error("query(): Expected page with options but got something else for "+node);
+                return null;
+            }
         }
 		LOG.debug("Extracting results");
 		
