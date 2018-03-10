@@ -38,15 +38,6 @@ public class App
         }
         final OSMXmlParser parser = new OSMXmlParser();
         parser.parse(in);
-//        for ( NodeType t : NodeType.values() ) {
-//            if ( t != NodeType.UNKNOWN ) 
-//            {
-//                parser.getNamedLocations(t).locationsByName.values().forEach( n -> 
-//                {
-//                    System.out.println("Node "+n.nodeId+" | "+n.name()+" | "+n.nodeType()+" | "+n.coordinates+" | "+n.getTagString());
-//                });
-//            }
-//        }
 
         for ( NodeType t : NodeType.values() ) {
             if ( t != NodeType.UNKNOWN ) {

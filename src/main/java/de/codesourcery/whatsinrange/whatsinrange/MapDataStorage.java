@@ -25,17 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class MapDataStorage extends JdbcTemplate implements IMapDataStorage 
 {
     public static final String POI_NODES = "poi_nodes";
-    /*
-CREATE TABLE poi_nodes (
-  node_id bigint PRIMARY KEY NOT NULL,
-  osm_node_id bigint UNIQUE NOT NULL,
-  osm_node_name text NOT NULL,
-  node_type node_type NOT NULL, 
-  hvv_name text DEFAULT NULL,
-  minutes_to_central_station float DEFAULT NULL,
-  osm_location geography(POINT)
-);
-     */
     
     private static final RowMapper<POINode> ROW_MAPPER = (rs,rowNum) -> 
     {
@@ -182,15 +171,6 @@ CREATE TABLE poi_nodes (
     @Transactional
     public Optional<POINode> findClosestNode(double longitude, double latitude,boolean withTravelData) {
 
-        /*
-  node_id bigint PRIMARY KEY NOT NULL,
-  osm_node_id bigint UNIQUE NOT NULL,
-  osm_node_name text NOT NULL,
-  node_type node_type NOT NULL, 
-  hvv_name text DEFAULT NULL,
-  minutes_to_central_station float DEFAULT NULL,
-  osm_location geography(POINT)         
-         */
         final String constraint = withTravelData ? "WHERE minutes_to_central_station IS NOT NULL" : "";
         final String sql = "SELECT node_id,osm_node_id,osm_node_name,node_type,hvv_name,minutes_to_central_station,ST_AsText(osm_location) AS location,"
                 + "ST_DISTANCE(osm_location,ST_SetSRID(ST_MakePoint(?, ?), 4326)) AS distance FROM "+POI_NODES+" "+constraint+" ORDER BY osm_location <-> ST_SetSRID(ST_MakePoint(?, ?), 4326) ASC LIMIT 1";

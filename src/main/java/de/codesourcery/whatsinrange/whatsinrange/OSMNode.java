@@ -45,14 +45,6 @@ public final class OSMNode
     }
 
     public static boolean isBusStop(Map<String,String> tags) {
-        /*
-    <tag k="bus" v="yes"/>
-    <tag k="highway" v="bus_stop"/>
-    <tag k="name" v="Tornesch, Pracherdamm"/>
-    <tag k="public_transport" v="platform"/>
-    <tag k="shelter" v="yes"/>
-         
-         */
     	return contains("bus","yes",tags) && 
     	        ( contains("public_transport","stop_position",tags) || 
     		      contains("public_transport","platform",tags) ||  

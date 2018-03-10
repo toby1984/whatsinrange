@@ -11,18 +11,15 @@ public class Main
     {
         try ( ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("/spring.xml")  )
         {
-            // do stuff
-//            final String map = "/map.osm";
-            
             final String map = "/hamburg.osm";
             final InputStream in = App.class.getResourceAsStream( map );            
             final App app = ctx.getBean(App.class);
             long time1 = System.currentTimeMillis();
-//             app.importData(in);
+             app.importData(in);
              long time2 = System.currentTimeMillis();
              System.out.println("Import took "+(time2-time1)+" ms");
             
-//            app.enhanceData( new ConsoleChoiceCallback() );
+            app.enhanceData( new ConsoleChoiceCallback() );
             
             final FileOutputStream out = new FileOutputStream("/home/tobi/oxygen_workspace/whatsinrange/src/main/resources/data.js");
 
