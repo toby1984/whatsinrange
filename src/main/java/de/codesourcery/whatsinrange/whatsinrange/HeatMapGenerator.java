@@ -3,9 +3,9 @@ package de.codesourcery.whatsinrange.whatsinrange;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -24,6 +24,10 @@ import org.springframework.stereotype.Component;
 public class HeatMapGenerator {
 
     private static final double MAX_WEIGHT = 10d;
+    
+    private static final Duration MAX_TRAVEL_TIME_MINUTES = Duration.ofMinutes( 60 );
+    
+    private static final boolean SCALE_WEIGHT = true;
     
     @Autowired
     private IMapDataStorage datastorage;
@@ -133,11 +137,10 @@ public class HeatMapGenerator {
                 Thread.interrupted();
             }
             
-            boolean scale = true;
             double scaleFactor = 1d;
             double minweight = Float.MAX_VALUE;
             float maxweight = Float.MIN_VALUE;            
-            if ( scale ) 
+            if ( SCALE_WEIGHT ) 
             {
                 for ( HeatmapData data : list ) 
                 {
@@ -156,12 +159,12 @@ public class HeatMapGenerator {
             for ( HeatmapData data : list ) 
             {
                 double weight = data.weight;
-                if ( scale ) {
+                if ( SCALE_WEIGHT ) {
                     weight = (weight - minweight) * scaleFactor;
                 } 
-//                if ( data.weight > 30 ) {
-//                    weight = MAX_WEIGHT;
-//                }
+                if ( data.weight > MAX_TRAVEL_TIME_MINUTES.getSeconds()/60 ) {
+                    weight = MAX_WEIGHT;
+                }
                 if ( first ) {
                     writer.print( "{location: new google.maps.LatLng("+data.latitude+", "+data.longitude+"), weight: "+weight+"}");
                     first = false;

@@ -12,6 +12,7 @@
     <Logger name="org.springframework.context" level="info"/>
     <Logger name="org.springframework.core" level="info"/>
     <Logger name="org.springframework.beans" level="info"/>
+    <Logger name="org.openqa.selenium.phantomjs" level="off"/>
     <Root level="info">
       <AppenderRef ref="STDOUT"/>
     </Root>

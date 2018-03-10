@@ -1,8 +1,5 @@
 package de.codesourcery.whatsinrange.whatsinrange;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.ZoneId;
@@ -10,8 +7,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -105,7 +102,7 @@ public class HVVScraper extends SearchResultsScraper
             {
                 final List<WebElement> options= driver.findElementsByCssSelector("select[id='personalSearch:startSelectMenu'] option");
                 if ( options.isEmpty() ) {
-                    throw new RuntimeException("Found no options for "+node);
+                    throw new NoSuchElementException("Found no options for "+node);
                 }
                 final List<String> choices = options.stream().map( element -> element.getAttribute("innerText") ).collect( Collectors.toList() );
                 final Optional<String> userChoice = callback.makeChoice( node, choices );

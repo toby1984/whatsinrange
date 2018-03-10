@@ -25,6 +25,7 @@ public abstract class SearchResultsScraper implements AutoCloseable
 
     private boolean savePages = false;
     private Duration timeout = Duration.ofSeconds( 10 );
+    private boolean showPhantomJsLog = false;
 
     protected PhantomJSDriver driver;   
 
@@ -36,6 +37,7 @@ public abstract class SearchResultsScraper implements AutoCloseable
     {
         final DesiredCapabilities caps = createCapabilities();
         final PhantomJSDriver driver = new PhantomJSDriver(caps);
+
         driver.manage().timeouts().implicitlyWait( timeout.getSeconds() , TimeUnit.SECONDS);
         return driver;
     } 
@@ -62,6 +64,14 @@ public abstract class SearchResultsScraper implements AutoCloseable
         final DesiredCapabilities caps = new DesiredCapabilities();
         caps.setJavascriptEnabled(true);                
         caps.setCapability("takesScreenshot", true);
+        
+        if ( ! showPhantomJsLog ) 
+        {
+            String[] phantomArgs = new  String[] {
+                    "--webdriver-loglevel=NONE"
+                };
+                caps.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, phantomArgs);            
+        }        
         
         String executablePath = System.getProperty("phantomjs.executable");
         if ( StringUtils.isBlank(executablePath) ) {

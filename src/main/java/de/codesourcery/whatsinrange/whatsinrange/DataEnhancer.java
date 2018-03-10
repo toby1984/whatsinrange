@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,6 +94,9 @@ public class DataEnhancer implements AutoCloseable, DisposableBean
                             LOG.info("run(): Shutdown called, not retrieving result for "+node);
                         }
                     } 
+                    catch(NoSuchElementException e) {
+                        LOG.warn("run(): Found no result for "+node);
+                    }
                     catch(Exception e) {
                         LOG.error("run(): Failed to get result for "+node,e);
                     }
